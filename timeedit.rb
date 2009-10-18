@@ -28,7 +28,7 @@ helpers do
     cal = cals.first
   
     newcal = Calendar.new
-    newcal.custom_property("X-WR-CALNAME", "#{code}")
+    newcal.custom_property("X-WR-CALNAME;VALUE=TEXT", "#{code}")
   
     cal.events.each do |event|
         m = event.summary.match(/(\w+), (\S+),/).to_a
