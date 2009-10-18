@@ -45,15 +45,13 @@ helpers do
             typ = "FÖ"
           end
         end
-        if typ != "LA"
-          if typ != nil and plats != nil
-            sum = "#{kurskod} #{typ} i #{plats}"
-            newcal.event do
-              dtstart(event.start)
-              dtend(event.end)
-              summary(sum)
-              location(event.location)
-            end
+        if typ != nil and plats != nil
+          sum = "#{kurskod} #{typ} i #{plats}"
+          newcal.event do
+            dtstart(event.start)
+            dtend(event.end)
+            summary(sum)
+            location(event.location)
           end
         end
     end
