@@ -36,16 +36,9 @@ helpers do
         # or just one
         #  "TDDC73, LA, C2, Johan Jernl\303\245s"
         # We are just interested in the type
-        m = event.summary.match(/(\w{4}\d{2}, \w{4}\d{2}), (\S+)|(\w{4}\d{2}), (\S+)/).to_a
-        kurskod = code
+        m = event.summary.match(/(\w{4}\d{2}, \w{4}\d{2}), (\S+),|(\w{4}\d{2}), (\S+),/).to_a.reject{|item| item==nil}
         typ = m[2]
         plats = event.location
-        # I think this was an bug in TimeEdit that is solved now
-        if plats != nil
-          if plats[-1].chr == "_"
-            plats = event.location[0..-2]
-          end
-        end
         # Fix ö in FÖ
         if typ != nil
           if typ[0].chr == "F"
@@ -54,7 +47,7 @@ helpers do
         end
         # Stitch things togheter
         if typ != nil and plats != nil
-          sum = "#{kurskod} #{typ} i #{plats}"
+          sum = "#{code} #{typ} i #{plats}"
           newcal.event do
             dtstart(event.start)
             dtend(event.end)
