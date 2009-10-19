@@ -29,6 +29,7 @@ helpers do
   
     newcal = Calendar.new
     newcal.custom_property("X-WR-CALNAME;VALUE=TEXT", "#{code}")
+    newcal.custom_property("X-WR-CALDESC;VALUE=TEXT", "Schema för kursen #{code}")
   
     cal.events.each do |event|
         # Summary can contain two course codes like
