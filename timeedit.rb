@@ -4,9 +4,9 @@ require 'open-uri'
 require 'rubygems'
 require 'icalendar'
 require 'sinatra'
-require 'iconv'
 
-cd = Iconv.new('utf-8', 'iso-8859-1')
+#require 'iconv'
+#cd = Iconv.new('utf-8', 'iso-8859-1')
 
 include Icalendar
 
@@ -44,15 +44,14 @@ helpers do
         typ = m[2]
         plats = event.location
         # Fix ö in FÖ
-        if typ != nil
-          if typ[0].chr == "F"
-            typ = "FÖ"
-          end
-        end
+        #if typ != nil
+        #  if typ[0].chr == "F"
+        #    typ = "FÖ"
+        #  end
+        #end
         # Stitch things togheter
         if typ != nil and plats != nil
-          # UTF-8 fix?
-          sum = cd.iconv("#{code} #{typ} i #{plats}")
+          sum = "#{code} #{typ} i #{plats}"
           newcal.event do
             dtstart(event.start)
             dtend(event.end)
