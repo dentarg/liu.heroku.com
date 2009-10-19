@@ -31,20 +31,28 @@ helpers do
     newcal.custom_property("X-WR-CALNAME;VALUE=TEXT", "#{code}")
   
     cal.events.each do |event|
-        m = event.summary.match(/(\w+), (\S+),/).to_a
-        kurskod = m[1]
+        # Summary can contain two course codes like
+        #  "TDDC73, TDDD13, F\303\226, C2, IT2, Anders Fr\303\266berg, Johan \303\205berg"
+        # or just one
+        #  "TDDC73, LA, C2, Johan Jernl\303\245s"
+        # We are just interested in the type
+        m = event.summary.match(/(\w{4}\d{2}, \w{4}\d{2}), (\S+)|(\w{4}\d{2}), (\S+)/).to_a
+        kurskod = code
         typ = m[2]
         plats = event.location
+        # I think this was an bug in TimeEdit that is solved now
         if plats != nil
           if plats[-1].chr == "_"
-            plats = event.location[0..-2] 
+            plats = event.location[0..-2]
           end
         end
+        # Fix ö in FÖ
         if typ != nil
           if typ[0].chr == "F"
             typ = "FÖ"
           end
         end
+        # Stitch things togheter
         if typ != nil and plats != nil
           sum = "#{kurskod} #{typ} i #{plats}"
           newcal.event do
