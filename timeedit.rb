@@ -21,7 +21,8 @@ helpers do
     return content.match(/addObject\((\d+)\)/).to_a[1]
   end
   
-  def timeedit(code)
+  def timeedit(code, type = "ALL")
+    type.upcase!
     id = code_to_id(code)
     url = "http://timeedit.liu.se/4DACTION/iCal_downloadReservations/timeedit.ics?id1=#{id}&branch=5&lang=0"
     content = "" # raw content of ical feed will be loaded here
@@ -42,22 +43,22 @@ helpers do
         # We are just interested in the type
         m = event.summary.match(/(\w{4}\d{2}, \w{4}\d{2}), (\S+),|(\w{4}\d{2}), (\S+),/).to_a.reject{|item| item==nil}
         typ = m[2]
+        typ = "FO" if typ[0].chr == "F"
         plats = event.location
-        # Fix ö in FÖ
-        #if typ != nil
-        #  if typ[0].chr == "F"
-        #    typ = "FÖ"
-        #  end
-        #end
+
         # Stitch things togheter
         if typ != nil and plats != nil
-          sum = "#{code} #{typ} i #{plats}"
-          newcal.event do
-            dtstart(event.start)
-            dtend(event.end)
-            summary(sum)
-            location(event.location)
+          event.summary("#{code} #{typ} i #{plats}")
+          if type == typ || type == "ALL"
+            newcal.add_event(event)
           end
+
+          #newcal.event do
+          #  dtstart(event.start)
+          #  dtend(event.end)
+          #  summary(sum)
+          #  location(event.location)
+          #end
         end
     end
     return newcal.to_ical
@@ -77,9 +78,21 @@ get '/' do
 end
 
 get '/:code' do
-  content_type "text/calendar"
+  p params
+  #content_type "text/calendar"
   if valid(params[:code])
-    timeedit(params[:code])
+    "<pre> #{timeedit(params[:code])}</pre>"
+    #timeedit(params[:code])
+  else
+    "Sorry, your code doesn't cut it."
+  end
+end
+
+get '/:code/:type' do
+  #content_type "text/calendar"
+  p params
+  if valid(params[:code])
+    "<pre> #{timeedit(params[:code], params[:type])}</pre>"
   else
     "Sorry, your code doesn't cut it."
   end
