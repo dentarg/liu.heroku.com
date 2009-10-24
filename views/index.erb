@@ -1,0 +1,114 @@
+<html>
+<head>
+  <title>liu.heroku.com</title>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+
+  <style type="text/css">
+
+  body {
+    margin: 20px;
+  }
+
+  @font-face {
+    font-family: ChunkFive;
+    src: url(/fonts/Chunkfive.eot); /* for IE */
+  }
+
+  @font-face {
+    font-family: ChunkFive;
+    src: url(/fonts/Chunkfive.woff) format("woff"), url(/fonts/Chunkfive.otf) format("opentype");
+  }
+
+  body {
+    font-family: Futura, Tahoma, sans-serif; 
+    font-weight: normal;
+  }
+
+  div.example { 
+    font-family: ChunkFive, Futura, Tahoma, sans-serif; 
+    font-weight: bold;
+    font-size: 48pt;
+    padding: 50px;
+    padding-bottom: 15px;
+    padding-top: 25px;
+    -moz-border-radius: 20px;
+    -webkit-border-radius: 20px;
+    color: #020;
+    background-color: #ddf;
+    line-height: 1em;
+    width: 500px;
+  }
+  
+  p {
+    margin-left: 40px;
+    font-size: 16pt;
+  }
+
+  p {
+    margin-left: 40px;
+    font-size: 20pt;
+    color: red;
+  }  
+
+  ul {
+    font-size: 12pt;
+  }
+  
+  a {
+    color: #383;
+    text-decoration: none;
+  }
+
+  h2 {
+    margin-left: 20px;
+    font-size: 16pt;
+    font-weight: normal;
+  }
+
+  em {
+    color: #338;
+    font-style: normal;
+  }
+
+  strong {
+    color: #383;
+    font-weight: normal;
+  }
+
+  </style>
+
+</head>
+<body>
+
+<div class="example"><em>liu</em>.heroku.com</div>
+
+<% if @error %>
+  <p class="error">
+    <%= @error %>
+  </p>
+<% end %>
+
+<h2>TimeEdit shortcut</h2>
+
+<p><a href="/TDDB44">liu.heroku.com/TDDB44</a></p>
+<p><a href="/TDDB44,TDDC90,TDDC73">liu.heroku.com/TDDB44,TDDC90,TDDC73</a></p>
+
+<h2>iCal feed</h2>
+
+<p><a href="/TDDB44/ical">liu.heroku.com/TDDB44/ical</a></p>
+<p><a href="/TDDB44,TDDC90,TDDC73/ical">liu.heroku.com/TDDB44,TDDC90,TDDC73/ical</a></p>
+
+<h2>Filter the iCal feed</h2>
+
+<ul>available filters: FO, LE, LA, LE, GU, SE</ul>
+
+<p><a href="/TDDB44/no/LA">liu.heroku.com/TDDB44/no/LA</a></p>
+<p><a href="/TDDB44/only/FO,LE">liu.heroku.com/TDDB44/only/FO,LE</a></p>
+
+<p><a href="/TDDB44,TDDC90,TDDC73/no/LA">liu.heroku.com/TDDB44,TDDC90,TDDC73/no/LA</a></p>
+<p><a href="/TDDB44,TDDC90,TDDC73/only/FO,LE">liu.heroku.com/TDDB44,TDDC90,TDDC73/only/FO,LE</a></p>
+
+</body>
+</html>
+  
