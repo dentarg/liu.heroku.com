@@ -10,6 +10,29 @@ include Icalendar
 DEBUG = false
 
 helpers do
+  def to_id(str)
+    if str.match(/^\w{4}\d{2}$/)
+      return code_to_id(str)
+    else
+      return group_to_id(str)
+    end
+  end
+  
+  def group_to_id(group)
+    # This function may only support groups where you have to choose a sub-group
+    subgroup = group[-1].chr.downcase
+    group = group[0..-2] if group.length > 2
+    url = "http://timeedit.liu.se/4DACTION/WebShowSearch/5/1-0?wv_type=8&wv_search=#{group}"
+    content = ""
+    open(url) {|s| content = s.read}
+    if content =~ (/<OPTION value='(\d+)'>#{subgroup}<\/OPTION>/)
+      id = $1
+    elsif content =~ (/addObject\((\d+)\)/)
+      id = $1
+    end
+    return id
+  end
+  
   def code_to_id(code)
     url = "http://timeedit.liu.se/4DACTION/WebShowSearch/5/1-0?wv_search=#{code}"
     content = ""
@@ -17,9 +40,11 @@ helpers do
     return content.match(/addObject\((\d+)\)/).to_a[1]
   end
   
-  def timeedit(codes, filterstr = "only", types = "ALL")
+  def timeedit(codes, filterstr = "only", types = "ALL", exclude = false)
     types = types.split(",")
+    # works for both course and group
     url = "http://timeedit.liu.se/4DACTION/iCal_downloadReservations/timeedit.ics?branch=5&#{id_str(codes,:ical)}lang=1"
+    p url
     content = "" # raw content of ical feed will be loaded here
     open(url) {|s| content = s.read }
   
@@ -36,25 +61,32 @@ helpers do
       # or just one
       #  "TDDC73, LA, C2, Johan Jernl\303\245s"
       m = event.summary.match(/(\w{4}\d{2}, \w{4}\d{2}), (\S+),|(\w{4}\d{2}), (\S+),/).to_a.reject{|item| item==nil}
-      code = m[1]
-      typ = m[2]
+      code = m[1] || event.summary.split(",")[0]
+      typ = m[2] || "NOTYPE"
       typ = "FO" if typ[0].chr == "F"
       plats = event.location
       
       # Stitch things togheter
       if typ != nil and plats != nil
+        event.summary("#{code} #{typ} i #{plats}")
         if filterstr == "only"
           types.each do |type|
             if type == typ || type == "ALL"
-              event.summary("#{code} #{typ} i #{plats}")
-              newcal.add_event(event)
+              if exclude && exclude.include?(code)
+                # do not add event
+              else
+                newcal.add_event(event)
+              end
             end
           end
         elsif filterstr == "no"
           types.each do |type|
             if type != typ
-              event.summary("#{code} #{typ} i #{plats}")
-              newcal.add_event(event)
+              if exclude && exclude.include?(code)
+                # do not add event
+              else
+                newcal.add_event(event)
+              end
             end
           end
         end
@@ -63,19 +95,32 @@ helpers do
     return newcal.to_ical
   end
   
-  def valid(code)
-    if code.match(/^\w{4}\d{2}$/)
-      return true
+  def render_ical(*args)
+    if DEBUG
+      "<pre>#{timeedit(*args)}</pre>"
     else
-      return false
+      content_type "text/calendar"
+      timeedit(*args)
     end
   end
   
-  def valid_codes(codes)
-    codes.split(",").each do |code|
-      if not valid(code)
+  def valid(input)
+    # Is it a course code?
+    if input.match(/^\w{4}\d{2}$/)
+      return true
+    # It might be a group
+    else
+      if group_to_id(input) == nil
         return false
+      else      
+        return true
       end
+    end
+  end
+  
+  def valid_input(list)
+    list.split(",").each do |input|
+      return valid(input)
     end
   end
   
@@ -83,13 +128,13 @@ helpers do
     str = ""
     codes.split(",").each_with_index do |code,i|
       if type == :gfx
-        str += "wv_obj#{i+1}=#{code_to_id(code)}&"
+        str += "wv_obj#{i+1}=#{to_id(code)}&"
       elsif type == :ical
-        str += "id#{i+1}=#{code_to_id(code)}&"
+        str += "id#{i+1}=#{to_id(code)}&"
       end
     end
     return str
-  end
+  end 
   
   def valid_types(types)
     valid_types = %w(FO LE LA LE GU SE)
@@ -101,7 +146,7 @@ helpers do
   
   def valid_filter(str)
     str == "only" || str == "no"
-  end  
+  end
 end
 
 get '/' do
@@ -109,9 +154,9 @@ get '/' do
 end
 
 get '/:codes' do
-  if valid_codes(params[:codes])
+  if valid_input(params[:codes])
     @url = "http://timeedit.liu.se/4DACTION/WebShowSearch/5/1-0?wv_type=6&#{id_str(params[:codes], :gfx)}wv_graphic=Grafiskt+format"
-    erb :gfx
+    erb :gfx   
   else
     @error = "Sorry, one of your codes does not cut it."
     erb :index
@@ -119,26 +164,30 @@ get '/:codes' do
 end
 
 get '/:codes/ical' do
-  if valid_codes(params[:codes])
-    if DEBUG
-      "<pre>#{timeedit(params[:codes])}</pre>"
-    else
-      content_type "text/calendar"
-      timeedit(params[:codes])
-    end
+  if valid_input(params[:codes])
+    render_ical(params[:codes])
   else
     @error = "Sorry, one of your codes does not cut it."
   end
 end
 
 get '/:codes/:filter/:types' do
-  if valid_codes(params[:codes]) && valid_filter(params[:filter]) && valid_types(params[:types])
-    if DEBUG
-      "<pre>#{timeedit(params[:codes], params[:filter], params[:types])}</pre>"
-    else
-      content_type "text/calendar"
-      timeedit(params[:codes], params[:filter], params[:types])
-    end
+  # /Y3A,TDDC73/only/FO,LE
+  if valid_input(params[:codes]) && valid_filter(params[:filter]) && valid_types(params[:types])
+    p "HEJ1"
+    render_ical(params[:codes], params[:filter], params[:types])
+  # /Y3A/exclude/TDTS08,TATA26
+  elsif valid_input(params[:codes]) && params[:filter] == "exclude" && valid_input(params[:types])
+    render_ical(params[:codes], "only", "ALL", params[:types])
+  else
+    @error = "You are doing it wrong."
+    erb :index
+  end
+end
+
+get '/:codes/:filter/:types/exclude/:exclude_codes' do
+  if valid_input(params[:codes]) && valid_filter(params[:filter]) && valid_types(params[:types]) && valid_input(params[:exclude_codes])
+    render_ical(params[:codes], params[:filter], params[:types], params[:exclude_codes])
   else
     @error = "You are doing it wrong."
     erb :index
