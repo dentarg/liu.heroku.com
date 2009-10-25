@@ -33,7 +33,6 @@ helpers do
       #  "TDDC73, TDDD13, F\303\226, C2, IT2, Anders Fr\303\266berg, Johan \303\205berg"
       # or just one
       #  "TDDC73, LA, C2, Johan Jernl\303\245s"
-      # We are just interested in the type
       m = event.summary.match(/(\w{4}\d{2}, \w{4}\d{2}), (\S+),|(\w{4}\d{2}), (\S+),/).to_a.reject{|item| item==nil}
       code = m[1]
       typ = m[2]
