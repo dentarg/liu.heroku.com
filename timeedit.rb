@@ -5,11 +5,7 @@ require 'rubygems'
 require 'icalendar'
 require 'sinatra'
 require 'erb'
-
 include Icalendar
-
-# ToDo
-# parametrar för att filtrera FÖ, LE, LA osv
 
 helpers do
   def code_to_id(code)
