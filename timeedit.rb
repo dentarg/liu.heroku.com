@@ -7,6 +7,8 @@ require 'sinatra'
 require 'erb'
 include Icalendar
 
+DEBUG = false
+
 helpers do
   def code_to_id(code)
     url = "http://timeedit.liu.se/4DACTION/WebShowSearch/5/1-0?wv_search=#{code}"
@@ -65,7 +67,7 @@ helpers do
     if code.match(/^\w{4}\d{2}$/)
       return true
     else
-      false
+      return false
     end
   end
   
@@ -90,9 +92,9 @@ helpers do
   end
   
   def valid_types(types)
-    types = %w(FO, LE, LA, LE, GU, SE)
-    types.each do |type|
-      return false if not types.include?(type)
+    valid_types = %w(FO LE LA LE GU SE)
+    types.split(",").each do |type|
+      return false if not valid_types.include?(type)
     end
     return true
   end
@@ -118,10 +120,12 @@ end
 
 get '/:codes/ical' do
   if valid_codes(params[:codes])
-    # DEBUG
-    # "<pre>#{timeedit(params[:codes])}</pre>"
-    content_type "text/calendar"
-    timeedit(params[:codes])
+    if DEBUG
+      "<pre>#{timeedit(params[:codes])}</pre>"
+    else
+      content_type "text/calendar"
+      timeedit(params[:codes])
+    end
   else
     @error = "Sorry, one of your codes does not cut it."
   end
@@ -129,10 +133,12 @@ end
 
 get '/:codes/:filter/:types' do
   if valid_codes(params[:codes]) && valid_filter(params[:filter]) && valid_types(params[:types])
-    # DEBUG
-    # "<pre>#{timeedit(params[:codes], params[:filter], params[:types])}</pre>"
-    content_type "text/calendar"
-    timeedit(params[:codes], params[:filter], params[:types])
+    if DEBUG
+      "<pre>#{timeedit(params[:codes], params[:filter], params[:types])}</pre>"
+    else
+      content_type "text/calendar"
+      timeedit(params[:codes], params[:filter], params[:types])
+    end
   else
     @error = "You are doing it wrong."
     erb :index
