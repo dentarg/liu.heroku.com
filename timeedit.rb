@@ -40,11 +40,10 @@ helpers do
     return content.match(/addObject\((\d+)\)/).to_a[1]
   end
   
-  def timeedit(codes, filterstr = "only", types = "ALL", exclude = false)
-    types = types.split(",")
+  def timeedit(codes, filterstr = "only", types_to_filter = "ALL", exclude = false)
+    types_to_filter = types_to_filter.split(",")
     # works for both course and group
     url = "http://timeedit.liu.se/4DACTION/iCal_downloadReservations/timeedit.ics?branch=5&#{id_str(codes,:ical)}lang=1"
-    p url
     content = "" # raw content of ical feed will be loaded here
     open(url) {|s| content = s.read }
   
@@ -70,7 +69,7 @@ helpers do
       if typ != nil and plats != nil
         event.summary("#{code} #{typ} i #{plats}")
         if filterstr == "only"
-          types.each do |type|
+          types_to_filter.each do |type|
             if type == typ || type == "ALL"
               if exclude && exclude.include?(code)
                 # do not add event
@@ -80,14 +79,10 @@ helpers do
             end
           end
         elsif filterstr == "no"
-          types.each do |type|
-            if type != typ
-              if exclude && exclude.include?(code)
-                # do not add event
-              else
-                newcal.add_event(event)
-              end
-            end
+          if types_to_filter.include?(typ) || exclude && exclude.include?(code)
+            # do not add event
+          else
+            newcal.add_event(event)
           end
         end
       end
@@ -172,9 +167,8 @@ get '/:codes/ical' do
 end
 
 get '/:codes/:filter/:types' do
-  # /Y3A,TDDC73/only/FO,LE
+  # /TDDC73/only/FO,LE
   if valid_input(params[:codes]) && valid_filter(params[:filter]) && valid_types(params[:types])
-    p "HEJ1"
     render_ical(params[:codes], params[:filter], params[:types])
   # /Y3A/exclude/TDTS08,TATA26
   elsif valid_input(params[:codes]) && params[:filter] == "exclude" && valid_input(params[:types])
