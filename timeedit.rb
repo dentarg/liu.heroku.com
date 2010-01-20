@@ -60,6 +60,7 @@ helpers do
       # or just one
       #  "TDDC73, LA, C2, Johan Jernl\303\245s"
       m = event.summary.match(/(\w{4}\d{2}, \w{4}\d{2}), (\S+),|(\w{4}\d{2}), (\S+),/).to_a.reject{|item| item==nil}
+
       code = m[1] || event.summary.split(",")[0]
       typ = m[2] || "NOTYPE"
       typ = "FO" if typ[0].chr == "F"
@@ -67,7 +68,8 @@ helpers do
       
       # Stitch things togheter
       if typ != nil and plats != nil
-        event.summary("#{code} #{typ} i #{plats}")
+        new_summary = "#{event.summary} (#{plats})"
+        event.summary(new_summary)
         if filterstr == "only"
           types_to_filter.each do |type|
             if type == typ || type == "ALL"
