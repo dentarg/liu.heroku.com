@@ -59,13 +59,18 @@ helpers do
       #  "TDDC73, TDDD13, F\303\226, C2, IT2, Anders Fr\303\266berg, Johan \303\205berg"
       # or just one
       #  "TDDC73, LA, C2, Johan Jernl\303\245s"
+
+      # 2011-03-19
+      #  TimeEdit now uses "Lektion" instead of LE and so on
+      event.summary = translate_long_type_to_short_type(event.summary)
+
       m = event.summary.match(/(\w{4}\d{2}, \w{4}\d{2}), (\S+),|(\w{4}\d{2}), (\S+),/).to_a.reject{|item| item==nil}
 
       code = m[1] || event.summary.split(",")[0]
       typ = m[2] || "NOTYPE"
       typ = "FO" if typ[0].chr == "F"
       plats = event.location
-      
+
       # Stitch things togheter
       if typ != nil and plats != nil
         new_summary = "#{event.summary} (#{plats})"
@@ -133,14 +138,35 @@ helpers do
     return str
   end 
   
+  # PR	  	Projektarbete
+  # LE	  	Lektion
+  # LA	  	Laboration
+  # SE	  	Seminarium
+  # RE	  	Redovisning
+  # GU	  	Gruppundervisning
+  def translate_long_type_to_short_type(summary)
+    types = { "Projektarbete"     => "PR",
+              "Lektion"           => "LE",
+              "Laboration"        => "LA",
+              "Seminarium"        => "SE",
+              "Redovisning"       => "RE",
+              "Gruppundervisning" => "GU" }
+    types.each do |type_long, type_short|
+      if summary.include?(type_long)
+        summary = summary.gsub(type_long, type_short)
+      end
+    end
+    return summary
+  end
+
   def valid_types(types)
-    valid_types = %w(FO LE LA LE GU SE)
+    valid_types = %w(FO LE LA GU SE PR RE)
     types.split(",").each do |type|
       return false if not valid_types.include?(type)
     end
     return true
   end
-  
+
   def valid_filter(str)
     str == "only" || str == "no"
   end
