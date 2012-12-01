@@ -1,7 +1,8 @@
-#!/usr/bin/ruby
+# encoding: utf-8
+$stdout.sync = true
+$stderr.sync = true
 
 require 'open-uri'
-require 'rubygems'
 require 'icalendar'
 require 'sinatra'
 require 'erb'
