@@ -1,2 +1,2 @@
-require 'timeedit'
+require './timeedit'
 run Sinatra::Application
